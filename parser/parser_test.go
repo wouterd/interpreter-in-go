@@ -838,7 +838,7 @@ func TestParsingIndexExpressions(t *testing.T) {
 }
 
 func TestParsingHashExpressions(t *testing.T) {
-    input := `{ "a" : true }`
+    input := `{ "a" : true, "b": 1 }`
 
     l := lexer.New(input)
     p := New(l)
@@ -853,11 +853,13 @@ func TestParsingHashExpressions(t *testing.T) {
     if !ok {
         t.Fatalf("Expression is not a HashLiteral, got=%T", stmt.Expression)
     }
-    if len(hashExp.Data) != 1 {
+    if len(hashExp.Data) != 2 {
         t.Fatalf("Expecting one entry in the Hash, got=%d", len(hashExp.Data))
     }
     testStringLiteral(t, hashExp.Data[0].Key, "a")
     testBooleanLiteral(t, hashExp.Data[0].Value, true)
+    testStringLiteral(t, hashExp.Data[1].Key, "b")
+    testIntegerLiteral(t, hashExp.Data[1].Value, 1)
 
     input = "{}"
     l = lexer.New(input)

@@ -114,7 +114,10 @@ func (p *Parser) parseHashLiteral() ast.Expression {
             p.errors = append(p.errors, fmt.Sprintf("Keys need to be valid expressions, found=%v", p.curToken.Literal))
         }
 
-        p.expectPeek(token.COLON)
+        if !p.expectPeek(token.COLON) {
+            return nil
+        }
+
         p.nextToken()
 
         value := p.parseExpression(LOWEST)
@@ -123,6 +126,10 @@ func (p *Parser) parseHashLiteral() ast.Expression {
         }
 
         hash.Data = append(hash.Data, ast.HashPair{Key: key, Value: value})
+
+        if !p.peekTokenIs(token.RBRACE) && !p.expectPeek(token.COMMA) {
+            return nil
+        }
     }
 
     p.nextToken()
