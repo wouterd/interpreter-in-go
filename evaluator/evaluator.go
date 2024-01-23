@@ -90,6 +90,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
         }
         return evalIndexExpression(left, index)
 
+    case *ast.HashLiteral:
+        return evalHashLiteral(node, env)
+
 	case *ast.FunctionLiteral:
 		params := node.Parameters
 		body := node.Body
@@ -131,6 +134,31 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	return nil
 }
 
+func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
+    hash := object.NewHash()
+
+    for _, pair := range node.Data {
+        key := Eval(pair.Key, env)
+        if isError(key) {
+            return key
+        }
+
+        hashableKey, ok := key.(object.Hashable)
+        if !ok {
+            return newError("unusable as hash key: %s", key.Type())
+        }
+
+        value := Eval(pair.Value, env)
+        if isError(value) {
+            return value
+        }
+
+        hash.Set(hashableKey, value)
+    }
+
+    return &hash
+}
+
 func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Object {
 	var result []object.Object
 
@@ -145,12 +173,22 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) []object.Ob
 }
 
 func evalIndexExpression(left, index object.Object) object.Object {
-    if index.Type() != object.INTEGER_OBJ {
-        return newError("index must be of type integer, got: %s", index.Type())
-    }
     switch {
     case left.Type() == object.ARRAY_OBJ:
+        if index.Type() != object.INTEGER_OBJ {
+            return newError("index must be of type integer, got: %s", index.Type())
+        }
         return evalArrayIndexExpression(left, index)
+    case left.Type() == object.HASH_OBJ:
+        hashableIdx, ok := index.(object.Hashable)
+        if !ok {
+            return newError("Index must be of type integer, string or boolean, got: %s", index.Type())
+        }
+        if val, ok := left.(*object.Hash).Get(hashableIdx); ok {
+            return val
+        } else {
+            return NULL
+        }
     default:
         return newError("index operator not supported: %s", left.Type())
     }

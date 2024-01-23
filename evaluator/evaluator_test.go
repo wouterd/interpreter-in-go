@@ -225,6 +225,10 @@ func TestErrorHandling(t *testing.T) {
             `"Hello" - "World"`,
             "unknown operator: STRING - STRING",
         },
+        {
+            `{"name": "Monkey"}[fn(x) { x }];`,
+            "Index must be of type integer, string or boolean, got: FUNCTION",
+        },
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -421,6 +425,86 @@ func TestArrayIndexExpressions(t *testing.T) {
         {
             "[1, 2, 3][-1]",
             nil,
+        },
+    }
+    for _, tt := range tests {
+        evaluated := testEval(tt.input)
+        integer, ok := tt.expected.(int)
+        if ok {
+            testIntegerObject(t, evaluated, int64(integer))
+        } else {
+            testNullObject(t, evaluated)
+        }
+    }
+}
+
+func TestHashLiterals(t *testing.T) {
+    input := `let two = "two";
+    {
+        "one": 10 - 9,
+        two: 1 + 1,
+        "thr" + "ee": 6 / 2,
+        4: 4,
+        true: 5,
+        false: 6
+    }`
+    evaluated := testEval(input)
+    result, ok := evaluated.(*object.Hash)
+    if !ok {
+        t.Fatalf("Eval didn't return Hash. got=%T (%+v)", evaluated, evaluated)
+    }
+    expected := map[object.Hashable]int64{
+        (&object.String{Value: "one"}):1,
+        (&object.String{Value: "two"}):2,
+        (&object.String{Value: "three"}):3,
+        (&object.Integer{Value: 4}):4,
+        TRUE: 5,
+        FALSE: 6,
+    }
+    if result.Len() != len(expected) {
+        t.Fatalf("Hash has wrong num of pairs. got=%d", result.Len())
+    }
+    for expectedKey, expectedValue := range expected {
+        obj, ok := result.Get(expectedKey)
+        if !ok {
+            t.Errorf("no pair for given key in Pairs")
+        }
+        testIntegerObject(t, obj, expectedValue)
+    }
+}
+
+func TestHashIndexExpressions(t *testing.T) {
+    tests := []struct {
+        input string
+        expected interface{}
+    }{
+        {
+            `{"foo": 5}["foo"]`,
+            5,
+        },
+        {
+            `{"foo": 5}["bar"]`,
+            nil,
+        },
+        {
+            `let key = "foo"; {"foo": 5}[key]`,
+            5,
+        },
+        {
+            `{}["foo"]`,
+            nil,
+        },
+        {
+            `{5: 5}[5]`,
+            5,
+        },
+        {
+            `{true: 5}[true]`,
+            5,
+        },
+        {
+            `{false: 5}[false]`,
+            5,
         },
     }
     for _, tt := range tests {
