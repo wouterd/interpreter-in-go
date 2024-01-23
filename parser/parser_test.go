@@ -786,12 +786,16 @@ func TestStringLiteralExpression(t *testing.T) {
     program := p.ParseProgram()
     checkParserErrors(t, p)
     stmt := program.Statements[0].(*ast.ExpressionStatement)
-    literal, ok := stmt.Expression.(*ast.StringLiteral)
+    testStringLiteral(t, stmt.Expression, "hello world")
+}
+
+func testStringLiteral(t *testing.T, lit ast.Expression, expected string) {
+    strLit, ok := lit.(*ast.StringLiteral)
     if !ok {
-        t.Fatalf("exp not *ast.StringLiteral. got=%T", stmt.Expression)
+        t.Fatalf("exp not *ast.StringLiteral. got=%T", lit)
     }
-    if literal.Value != "hello world" {
-        t.Errorf("literal.Value not %q. got=%q", "hello world", literal.Value)
+    if strLit.Value != expected {
+        t.Errorf("literal.Value not %q. got=%q", expected, strLit.Value)
     }
 }
 
@@ -830,5 +834,47 @@ func TestParsingIndexExpressions(t *testing.T) {
     }
     if !testInfixExpression(t, indexExp.Index, 1, "+", 1) {
         return
+    }
+}
+
+func TestParsingHashExpressions(t *testing.T) {
+    input := `{ "a" : true }`
+
+    l := lexer.New(input)
+    p := New(l)
+    program := p.ParseProgram()
+    checkParserErrors(t, p)
+
+    stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+    if !ok {
+        t.Fatalf("Statement is not an ExpressionStatement. got=%T", program.Statements[0])
+    }
+    hashExp, ok := stmt.Expression.(*ast.HashLiteral)
+    if !ok {
+        t.Fatalf("Expression is not a HashLiteral, got=%T", stmt.Expression)
+    }
+    if len(hashExp.Data) != 1 {
+        t.Fatalf("Expecting one entry in the Hash, got=%d", len(hashExp.Data))
+    }
+    testStringLiteral(t, hashExp.Data[0].Key, "a")
+    testBooleanLiteral(t, hashExp.Data[0].Value, true)
+
+    input = "{}"
+    l = lexer.New(input)
+    p = New(l)
+    program = p.ParseProgram()
+    checkParserErrors(t, p)
+
+    stmt, ok = program.Statements[0].(*ast.ExpressionStatement)
+    if !ok {
+        t.Fatalf("Statement is not an ExpressionStatement. got=%T", program.Statements[0])
+    }
+    hashExp, ok = stmt.Expression.(*ast.HashLiteral)
+    if !ok {
+        t.Fatalf("Expression is not a HashLiteral, got=%T", stmt.Expression)
+    }
+
+    if len(hashExp.Data) != 0 {
+        t.Fatalf("Expecting an empty map, but got %d entries", len(hashExp.Data))
     }
 }

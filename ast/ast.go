@@ -167,6 +167,32 @@ func (al *ArrayLiteral) String() string {
     return out.String()
 }
 
+type HashPair struct {
+    Key Expression
+    Value Expression
+}
+
+type HashLiteral struct {
+    Token token.Token
+    Data []HashPair
+}
+
+func (hl *HashLiteral) expressionNode() {}
+func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
+func (hl *HashLiteral) String() string {
+    var out bytes.Buffer
+
+    elements := []string{}
+    for _, pair := range hl.Data{
+        elements = append(elements, pair.Key.String() + ":" + pair.Value.String())
+    }
+
+    out.WriteString("{")
+    out.WriteString(strings.Join(elements, ","))
+    out.WriteString("}")
+    return out.String()
+}
+
 type IndexExpression struct {
     Token token.Token
     Left Expression

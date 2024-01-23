@@ -13,6 +13,7 @@ func TestNextToken(t *testing.T) {
     "As they say \"special\""
     "\\ \\ \\ \\"
     [1, 2];
+    {"A" : true, 123 : "false", true: "false"}
     `
 
 	tests := []struct {
@@ -37,6 +38,19 @@ func TestNextToken(t *testing.T) {
         {token.INT, "2"},
         {token.RBRACKET, "]"},
         {token.SEMICOLON, ";"},
+        {token.LBRACE, "{"},
+        {token.STRING, "A"},
+        {token.COLON, ":"},
+        {token.TRUE, "true"},
+        {token.COMMA, ","},
+        {token.INT, "123"},
+        {token.COLON, ":"},
+        {token.STRING, "false"},
+        {token.COMMA, ","},
+        {token.TRUE, "true"},
+        {token.COLON, ":"},
+        {token.STRING, "false"},
+        {token.RBRACE, "}"},
 		{token.EOF, ""},
 	}
 

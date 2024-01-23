@@ -75,6 +75,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
     p.registerPrefix(token.STRING, p.parseStringLiteral)
     p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
+    p.registerPrefix(token.LBRACE, p.parseHashLiteral)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -100,6 +101,33 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
     array.Elements = p.parseExpressionList(token.RBRACKET)
 
     return array
+}
+
+func (p *Parser) parseHashLiteral() ast.Expression {
+    hash := &ast.HashLiteral{Token: p.curToken, Data: []ast.HashPair{}}
+
+    for !p.peekTokenIs(token.RBRACE) {
+        p.nextToken()
+
+        key := p.parseExpression(LOWEST)
+        if key == nil {
+            p.errors = append(p.errors, fmt.Sprintf("Keys need to be valid expressions, found=%v", p.curToken.Literal))
+        }
+
+        p.expectPeek(token.COLON)
+        p.nextToken()
+
+        value := p.parseExpression(LOWEST)
+        if value == nil {
+            p.errors = append(p.errors, fmt.Sprintf("Values need to be a valid expression, found=%v", p.curToken.Literal))
+        }
+
+        hash.Data = append(hash.Data, ast.HashPair{Key: key, Value: value})
+    }
+
+    p.nextToken()
+
+    return hash
 }
 
 func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
