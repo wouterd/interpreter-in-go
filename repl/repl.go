@@ -53,7 +53,7 @@ func Start(in io.Reader, out io.Writer) {
                 for name, obj := range macroEnv.All() {
                     macro, ok := obj.(*object.Macro)
                     if ok {
-                        fmt.Printf("%s: %s\n", name, macro.Body.String())
+                        fmt.Printf("%s: %s\n", name, macro.Inspect())
                     }
                 }
                 continue
