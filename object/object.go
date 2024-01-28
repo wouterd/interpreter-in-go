@@ -54,6 +54,19 @@ func (e *Environment) Set(name string, val Object) Object {
     return val
 }
 
+func (e *Environment) All() map[string]Object {
+    var env map[string]Object
+    if e.outer == nil { 
+        env = map[string]Object{}
+    } else {
+        env = e.outer.All()
+    }
+    for k, v := range e.store {
+        env[k] = v
+    }
+    return env
+}
+
 type Object interface {
     Type() ObjectType
     Inspect() string

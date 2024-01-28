@@ -34,10 +34,10 @@ func Start(in io.Reader, out io.Writer) {
             }
 
             cmd := line[1:i]
-            args := line[i+1:]
 
             switch cmd {
             case "load":
+                args := line[i+1:]
                 if len(args) > 0 {
                     cnts, err := os.ReadFile(args)
                     if err != nil {
@@ -49,6 +49,14 @@ func Start(in io.Reader, out io.Writer) {
                     io.WriteString(out, "USAGE: load [filename]\n")
                     continue
                 }
+            case "macros":
+                for name, obj := range macroEnv.All() {
+                    macro, ok := obj.(*object.Macro)
+                    if ok {
+                        fmt.Printf("%s: %s\n", name, macro.Body.String())
+                    }
+                }
+                continue
             }
         }
 
