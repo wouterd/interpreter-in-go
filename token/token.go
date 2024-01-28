@@ -12,9 +12,9 @@ const (
 	EOF     = "EOF"
 
 	// Identifiers & Literals
-	IDENT = "IDENT" // add, foo, bar, x, y...
-	INT   = "INT"   // 1231241
-    STRING = "STRING"
+	IDENT  = "IDENT" // add, foo, bar, x, y...
+	INT    = "INT"   // 1231241
+	STRING = "STRING"
 
 	// Operators
 	ASSIGN   = "="
@@ -33,14 +33,14 @@ const (
 	// Delimiters
 	COMMA     = ","
 	SEMICOLON = ";"
-    COLON     = ":"
+	COLON     = ":"
 
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
-    LBRACKET = "["
-    RBRACKET = "]"
+	LPAREN   = "("
+	RPAREN   = ")"
+	LBRACE   = "{"
+	RBRACE   = "}"
+	LBRACKET = "["
+	RBRACKET = "]"
 
 	// Keywords
 	FUNCTION = "FUNCTION"
@@ -50,7 +50,7 @@ const (
 	IF       = "IF"
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
-    MACRO    = "MACRO"
+	MACRO    = "MACRO"
 )
 
 var keywords = map[string]TokenType{
@@ -61,7 +61,7 @@ var keywords = map[string]TokenType{
 	"return": RETURN,
 	"true":   TRUE,
 	"false":  FALSE,
-    "macro":  MACRO,
+	"macro":  MACRO,
 }
 
 func LookupIdent(ident string) TokenType {

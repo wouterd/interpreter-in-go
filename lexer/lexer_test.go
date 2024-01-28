@@ -29,42 +29,42 @@ func TestNextToken(t *testing.T) {
 		{token.RBRACE, "}"},
 		{token.COMMA, ","},
 		{token.SEMICOLON, ";"},
-        {token.STRING, "foobar"},
-        {token.STRING, "foo bar"},
-        {token.STRING, "As they say \"special\""},
-        {token.STRING, "\\ \\ \\ \\"},
-        {token.LBRACKET, "["},
-        {token.INT, "1"},
-        {token.COMMA, ","},
-        {token.INT, "2"},
-        {token.RBRACKET, "]"},
-        {token.SEMICOLON, ";"},
-        {token.LBRACE, "{"},
-        {token.STRING, "A"},
-        {token.COLON, ":"},
-        {token.TRUE, "true"},
-        {token.COMMA, ","},
-        {token.INT, "123"},
-        {token.COLON, ":"},
-        {token.STRING, "false"},
-        {token.COMMA, ","},
-        {token.TRUE, "true"},
-        {token.COLON, ":"},
-        {token.STRING, "false"},
-        {token.RBRACE, "}"},
-        {token.MACRO, "macro"},
-        {token.LPAREN, "("},
-        {token.IDENT, "x"},
-        {token.COMMA, ","},
-        {token.IDENT, "y"},
-        {token.RPAREN, ")"},
-        {token.LBRACE, "{"},
-        {token.IDENT, "x"},
-        {token.PLUS, "+"},
-        {token.IDENT, "y"},
-        {token.SEMICOLON, ";"},
-        {token.RBRACE, "}"},
-        {token.SEMICOLON, ";"},
+		{token.STRING, "foobar"},
+		{token.STRING, "foo bar"},
+		{token.STRING, "As they say \"special\""},
+		{token.STRING, "\\ \\ \\ \\"},
+		{token.LBRACKET, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.RBRACKET, "]"},
+		{token.SEMICOLON, ";"},
+		{token.LBRACE, "{"},
+		{token.STRING, "A"},
+		{token.COLON, ":"},
+		{token.TRUE, "true"},
+		{token.COMMA, ","},
+		{token.INT, "123"},
+		{token.COLON, ":"},
+		{token.STRING, "false"},
+		{token.COMMA, ","},
+		{token.TRUE, "true"},
+		{token.COLON, ":"},
+		{token.STRING, "false"},
+		{token.RBRACE, "}"},
+		{token.MACRO, "macro"},
+		{token.LPAREN, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.SEMICOLON, ";"},
+		{token.RBRACE, "}"},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 
@@ -72,7 +72,7 @@ func TestNextToken(t *testing.T) {
 
 	for i, tt := range tests {
 		tok, err := l.NextToken()
-        failOnError(t, i, err)
+		failOnError(t, i, err)
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
 		}
@@ -84,9 +84,9 @@ func TestNextToken(t *testing.T) {
 }
 
 func failOnError(t *testing.T, testId int, err error) {
-    if err != nil {
-        t.Fatalf("tests[%d] - NextToken() returned an error, not expected: %v", testId, err.Error())
-    }
+	if err != nil {
+		t.Fatalf("tests[%d] - NextToken() returned an error, not expected: %v", testId, err.Error())
+	}
 }
 
 func TestSimpleProgram(t *testing.T) {
@@ -195,7 +195,7 @@ func TestSimpleProgram(t *testing.T) {
 
 	for i, tt := range tests {
 		tok, err := l.NextToken()
-        failOnError(t, i, err)
+		failOnError(t, i, err)
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
 		}

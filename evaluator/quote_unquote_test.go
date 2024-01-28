@@ -1,111 +1,111 @@
 package evaluator
 
-import ( 
-    "testing"
+import (
+	"testing"
 
-    "monkey/object"
+	"monkey/object"
 )
 
 func TestQuote(t *testing.T) {
-    tests := []struct { 
-        input    string
-        expected string
-    }{
-        {
-            `quote(5)`,
-            `5`,
-        },
-        {
-            `quote(foobar)`,
-            `foobar`,
-        },
-        {
-            `quote(foobar + barfoo)`,
-            `(foobar + barfoo)`,
-        },
-    }
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`quote(5)`,
+			`5`,
+		},
+		{
+			`quote(foobar)`,
+			`foobar`,
+		},
+		{
+			`quote(foobar + barfoo)`,
+			`(foobar + barfoo)`,
+		},
+	}
 
-    for _, tt := range tests {
-        evaluated := testEval(tt.input)
-        quote, ok := evaluated.(*object.Quote)
-        if !ok {
-            t.Fatalf("expected *object.Quote. got=%T (%v)", evaluated, evaluated)
-        }
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		quote, ok := evaluated.(*object.Quote)
+		if !ok {
+			t.Fatalf("expected *object.Quote. got=%T (%v)", evaluated, evaluated)
+		}
 
-        if quote.Node == nil {
-            t.Fatalf("quote.Node is nil")
-        }
+		if quote.Node == nil {
+			t.Fatalf("quote.Node is nil")
+		}
 
-        if quote.Node.String() != tt.expected {
-            t.Errorf("not equal. got=%q, want=%q", quote.Node.String(), tt.expected)
-        }
-    }
+		if quote.Node.String() != tt.expected {
+			t.Errorf("not equal. got=%q, want=%q", quote.Node.String(), tt.expected)
+		}
+	}
 }
 
 func TestQuoteUnquote(t *testing.T) {
-    tests := []struct {
-        input    string
-        expected string
-    }{
-        {
-            `quote(unquote(4))`,
-            `4`,
-        },
-        {
-            `quote(unquote(4 + 4))`,
-            `8`,
-        },
-        {
-            `quote(8 + unquote(4 + 4))`,
-            `(8 + 8)`,
-        },
-        {
-            `quote(unquote(4 + 4) + 8)`,
-            `(8 + 8)`,
-        },
-        {
-            `let foobar = 8;
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`quote(unquote(4))`,
+			`4`,
+		},
+		{
+			`quote(unquote(4 + 4))`,
+			`8`,
+		},
+		{
+			`quote(8 + unquote(4 + 4))`,
+			`(8 + 8)`,
+		},
+		{
+			`quote(unquote(4 + 4) + 8)`,
+			`(8 + 8)`,
+		},
+		{
+			`let foobar = 8;
             quote(foobar)`,
-            `foobar`,
-        },
-        {
-            `let foobar = 8;
+			`foobar`,
+		},
+		{
+			`let foobar = 8;
             quote(unquote(foobar))`,
-            `8`,
-        },
-        {
-            `quote(unquote(true))`,
-            `true`,
-        },
-        {
-            `quote(unquote(true == false))`,
-            `false`,
-        },
-        {
-            `quote(unquote(quote(4 + 4)))`,
-            `(4 + 4)`,
-        },
-        {
-            `let quotedInfixExpression = quote(4 + 4);
+			`8`,
+		},
+		{
+			`quote(unquote(true))`,
+			`true`,
+		},
+		{
+			`quote(unquote(true == false))`,
+			`false`,
+		},
+		{
+			`quote(unquote(quote(4 + 4)))`,
+			`(4 + 4)`,
+		},
+		{
+			`let quotedInfixExpression = quote(4 + 4);
             quote(unquote(4 + 4) + unquote(quotedInfixExpression))`,
-            `(8 + (4 + 4))`,
-        },
-    }
+			`(8 + (4 + 4))`,
+		},
+	}
 
-    for i, tt := range tests {
-        evaluated := testEval(tt.input)
-        quote, ok := evaluated.(*object.Quote)
-        if !ok {
-            t.Fatalf("test[%d]: expected *object.Quote. got=%T (%v)",
-            i, evaluated, evaluated)
-        }
+	for i, tt := range tests {
+		evaluated := testEval(tt.input)
+		quote, ok := evaluated.(*object.Quote)
+		if !ok {
+			t.Fatalf("test[%d]: expected *object.Quote. got=%T (%v)",
+				i, evaluated, evaluated)
+		}
 
-        if quote.Node == nil {
-            t.Fatalf("test[%d]: quote.Node is nil", i)
-        }
+		if quote.Node == nil {
+			t.Fatalf("test[%d]: quote.Node is nil", i)
+		}
 
-        if quote.Node.String() != tt.expected {
-            t.Errorf("test[%d]: not equal. got=%q, want=%q", i, quote.Node.String(), tt.expected)
-        }
-    }
+		if quote.Node.String() != tt.expected {
+			t.Errorf("test[%d]: not equal. got=%q, want=%q", i, quote.Node.String(), tt.expected)
+		}
+	}
 }

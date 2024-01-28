@@ -57,8 +57,8 @@ func (l *Lexer) NextToken() (token.Token, error) {
 		tok = newToken(token.GT, l.ch)
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
-    case ':':
-        tok = newToken(token.COLON, l.ch)
+	case ':':
+		tok = newToken(token.COLON, l.ch)
 	case '(':
 		tok = newToken(token.LPAREN, l.ch)
 	case ')':
@@ -69,17 +69,17 @@ func (l *Lexer) NextToken() (token.Token, error) {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
-    case '[':
-        tok = newToken(token.LBRACKET, l.ch)
-    case ']':
-        tok = newToken(token.RBRACKET, l.ch)
-    case '"':
-        if str, err := l.readString() ; err == nil {
-            tok.Type = token.STRING
-            tok.Literal = str
-        } else {
-            return token.Token{Type: token.ILLEGAL}, err
-        }
+	case '[':
+		tok = newToken(token.LBRACKET, l.ch)
+	case ']':
+		tok = newToken(token.RBRACKET, l.ch)
+	case '"':
+		if str, err := l.readString(); err == nil {
+			tok.Type = token.STRING
+			tok.Literal = str
+		} else {
+			return token.Token{Type: token.ILLEGAL}, err
+		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -118,28 +118,28 @@ func (l *Lexer) readChar() {
 }
 
 func (l *Lexer) readString() (string, error) {
-    str := ""
-    position := l.position + 1
-    for {
-        l.readChar()
-        if l.ch == '"' {
-            break
-        }
-        if l.ch == 0 {
-            return "", errors.New("Unterminated string literal")
-        }
-        if l.ch == '\\' {
-            switch l.peekChar() {
-            case '\\', '"':
-                str = str + l.input[position:l.position] + string(l.peekChar()) 
-                l.readChar()
-                position = l.position + 1
-            default:
-                return "", fmt.Errorf("Found wrong escape char: %v", l.peekChar())
-            }
-        }
-    }
-    return str + l.input[position:l.position], nil
+	str := ""
+	position := l.position + 1
+	for {
+		l.readChar()
+		if l.ch == '"' {
+			break
+		}
+		if l.ch == 0 {
+			return "", errors.New("Unterminated string literal")
+		}
+		if l.ch == '\\' {
+			switch l.peekChar() {
+			case '\\', '"':
+				str = str + l.input[position:l.position] + string(l.peekChar())
+				l.readChar()
+				position = l.position + 1
+			default:
+				return "", fmt.Errorf("Found wrong escape char: %v", l.peekChar())
+			}
+		}
+	}
+	return str + l.input[position:l.position], nil
 
 }
 
