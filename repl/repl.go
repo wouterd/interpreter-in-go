@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"monkey/compiler"
-	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
@@ -72,11 +71,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluator.DefineMacros(program, macroEnv)
-		expanded := evaluator.ExpandMacros(program, macroEnv)
+		// evaluator.DefineMacros(program, macroEnv)
+		// expanded := evaluator.ExpandMacros(program, macroEnv)
 
 		comp := compiler.New()
-		err := comp.Compile(expanded)
+		err := comp.Compile(program)
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
 			continue

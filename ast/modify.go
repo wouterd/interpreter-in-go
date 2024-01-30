@@ -1,5 +1,7 @@
 package ast
 
+import "fmt"
+
 type ModifierFunc func(Node) Node
 
 func Modify(node Node, modifier ModifierFunc) Node {
@@ -18,6 +20,7 @@ func Modify(node Node, modifier ModifierFunc) Node {
 		}
 
 	case *BlockStatement:
+		fmt.Println(node.String())
 		for i, stmt := range node.Statements {
 			node.Statements[i], _ = mod(stmt).(Statement)
 		}
