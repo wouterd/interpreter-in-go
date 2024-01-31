@@ -17,7 +17,7 @@ type Compiler struct {
 	constants           []object.Object
 	lastInstruction     EmittedInstruction
 	previousInstruction EmittedInstruction
-    symbols SymbolTable
+	symbols             SymbolTable
 }
 
 type Bytecode struct {
@@ -31,14 +31,14 @@ func New() *Compiler {
 		constants:           []object.Object{},
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
-        symbols: *NewSymbolTable(),
+		symbols:             *NewSymbolTable(),
 	}
 }
 
 func (c *Compiler) Reset() {
-    c.instructions = code.Instructions{}
-    c.lastInstruction = EmittedInstruction{}
-    c.previousInstruction = EmittedInstruction{}
+	c.instructions = code.Instructions{}
+	c.lastInstruction = EmittedInstruction{}
+	c.previousInstruction = EmittedInstruction{}
 }
 
 func (c *Compiler) Compile(node ast.Node) error {
@@ -71,12 +71,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
-        symbol, ok := c.symbols.Resolve(node.Name.Value)
-        if !ok {
-            symbol = c.symbols.Define(node.Name.Value)
-        }
-        c.emit(code.OpSetGlobal, symbol.Index)
-        
+		symbol, ok := c.symbols.Resolve(node.Name.Value)
+		if !ok {
+			symbol = c.symbols.Define(node.Name.Value)
+		}
+		c.emit(code.OpSetGlobal, symbol.Index)
 
 	case *ast.PrefixExpression:
 		err := c.Compile(node.Right)
@@ -175,48 +174,48 @@ func (c *Compiler) Compile(node ast.Node) error {
 		afterAlternativePos := len(c.instructions)
 		c.changeOperand(jumpPos, afterAlternativePos)
 
-    case *ast.IndexExpression:
-        err := c.Compile(node.Left)
-        if err != nil {
-            return err
-        }
+	case *ast.IndexExpression:
+		err := c.Compile(node.Left)
+		if err != nil {
+			return err
+		}
 
-        err = c.Compile(node.Index)
-        if err != nil {
-            return err
-        }
+		err = c.Compile(node.Index)
+		if err != nil {
+			return err
+		}
 
-        c.emit(code.OpIndex)
+		c.emit(code.OpIndex)
 
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(integer))
 
-    case *ast.StringLiteral:
-        str := &object.String{Value: node.Value}
-        c.emit(code.OpConstant, c.addConstant(str))
+	case *ast.StringLiteral:
+		str := &object.String{Value: node.Value}
+		c.emit(code.OpConstant, c.addConstant(str))
 
-    case *ast.ArrayLiteral:
-        for _, elem := range node.Elements {
-            err := c.Compile(elem)
+	case *ast.ArrayLiteral:
+		for _, elem := range node.Elements {
+			err := c.Compile(elem)
 			if err != nil {
 				return err
 			}
-        }
-        c.emit(code.OpArray, len(node.Elements))
+		}
+		c.emit(code.OpArray, len(node.Elements))
 
-    case *ast.HashLiteral:
-        for _, p := range node.Data {
-            err := c.Compile(p.Key)
-            if err != nil {
-                return err
-            }
-            err = c.Compile(p.Value)
-            if err != nil {
-                return err
-            }
-        }
-        c.emit(code.OpHash, len(node.Data) * 2)
+	case *ast.HashLiteral:
+		for _, p := range node.Data {
+			err := c.Compile(p.Key)
+			if err != nil {
+				return err
+			}
+			err = c.Compile(p.Value)
+			if err != nil {
+				return err
+			}
+		}
+		c.emit(code.OpHash, len(node.Data)*2)
 
 	case *ast.Boolean:
 		if node.Value {
@@ -225,12 +224,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpFalse)
 		}
 
-    case *ast.Identifier:
-        symbol, ok := c.symbols.Resolve(node.Value)
-        if !ok {
-            return fmt.Errorf("can't get global '%s', it's not defined.", node.Value)
-        }
-        c.emit(code.OpGetGlobal, symbol.Index)
+	case *ast.Identifier:
+		symbol, ok := c.symbols.Resolve(node.Value)
+		if !ok {
+			return fmt.Errorf("can't get global '%s', it's not defined.", node.Value)
+		}
+		c.emit(code.OpGetGlobal, symbol.Index)
 
 	}
 

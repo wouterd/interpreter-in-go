@@ -18,8 +18,8 @@ func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	//env := object.NewEnvironment()
 	macroEnv := object.NewEnvironment()
-    comp := compiler.New()
-    machine := vm.New(comp.Bytecode().Instructions, comp.Bytecode().Constants)
+	comp := compiler.New()
+	machine := vm.New(comp.Bytecode().Instructions, comp.Bytecode().Constants)
 
 	for {
 		fmt.Fprintf(out, PROMPT)
@@ -76,14 +76,14 @@ func Start(in io.Reader, out io.Writer) {
 		// evaluator.DefineMacros(program, macroEnv)
 		// expanded := evaluator.ExpandMacros(program, macroEnv)
 
-        comp.Reset()
+		comp.Reset()
 		err := comp.Compile(program)
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
 			continue
 		}
 
-        machine.Recode(comp.Bytecode().Instructions, comp.Bytecode().Constants)
+		machine.Recode(comp.Bytecode().Instructions, comp.Bytecode().Constants)
 		err = machine.Run()
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)

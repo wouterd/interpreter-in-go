@@ -36,9 +36,9 @@ const (
 	OpFalse
 	OpNull
 
-    OpArray
-    OpHash
-    OpIndex
+	OpArray
+	OpHash
+	OpIndex
 )
 
 var definitions = map[Opcode]*Definition{
@@ -60,9 +60,9 @@ var definitions = map[Opcode]*Definition{
 	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
 	OpJump:          {"OpJump", []int{2}},
 	OpNull:          {"OpNull", []int{}},
-	OpArray:          {"OpArray", []int{2}},
+	OpArray:         {"OpArray", []int{2}},
 	OpHash:          {"OpHash", []int{2}},
-	OpIndex:          {"OpIndex", []int{}},
+	OpIndex:         {"OpIndex", []int{}},
 }
 
 type Instructions []byte
