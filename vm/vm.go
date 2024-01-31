@@ -3,7 +3,6 @@ package vm
 import (
 	"fmt"
 	"monkey/code"
-	"monkey/compiler"
 	"monkey/object"
 )
 
@@ -25,20 +24,20 @@ type VM struct {
 	sp    int // Will point to the next value. top of the stack is stack[sp-1]
 }
 
-func New(bytecode *compiler.Bytecode) *VM {
+func New(instructions code.Instructions, constants []object.Object) *VM {
     return &VM{
-        instructions: bytecode.Instructions,
-        constants:    bytecode.Constants,
+        instructions: instructions,
+        constants:    constants,
         stack:        make([]object.Object, StackSize),
         globals: make([]object.Object, GlobalsSize),
         sp:           0,
     }
 }
 
-func (vm *VM) Recode(bytecode *compiler.Bytecode) {
+func (vm *VM) Recode(instructions code.Instructions, constants []object.Object) {
     vm.sp = 0
-    vm.instructions = bytecode.Instructions
-    vm.constants = bytecode.Constants
+    vm.instructions = instructions
+    vm.constants = constants
 }
 
 func (vm *VM) StackTop() object.Object {

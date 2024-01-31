@@ -19,7 +19,7 @@ func Start(in io.Reader, out io.Writer) {
 	//env := object.NewEnvironment()
 	macroEnv := object.NewEnvironment()
     comp := compiler.New()
-    machine := vm.New(comp.Bytecode())
+    machine := vm.New(comp.Bytecode().Instructions, comp.Bytecode().Constants)
 
 	for {
 		fmt.Fprintf(out, PROMPT)
@@ -83,7 +83,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-        machine.Recode(comp.Bytecode())
+        machine.Recode(comp.Bytecode().Instructions, comp.Bytecode().Constants)
 		err = machine.Run()
 		if err != nil {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
