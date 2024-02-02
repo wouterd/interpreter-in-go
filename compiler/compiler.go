@@ -37,11 +37,11 @@ func New() *Compiler {
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
 	}
-    symbols := NewSymbolTable() 
-    
-    for i, v := range object.Builtins {
-        symbols.DefineBuiltin(i, v.Name)
-    }
+	symbols := NewSymbolTable()
+
+	for i, v := range object.Builtins {
+		symbols.DefineBuiltin(i, v.Name)
+	}
 
 	return &Compiler{
 		constants:  []object.Object{},
@@ -91,11 +91,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if !ok {
 			symbol = c.symbols.Define(node.Name.Value)
 		}
-        if symbol.Scope == LocalScope {
-            c.emit(code.OpSetLocal, symbol.Index)
-        } else {
-            c.emit(code.OpSetGlobal, symbol.Index)
-        }
+		if symbol.Scope == LocalScope {
+			c.emit(code.OpSetLocal, symbol.Index)
+		} else {
+			c.emit(code.OpSetGlobal, symbol.Index)
+		}
 
 	case *ast.ReturnStatement:
 		err := c.Compile(node.ReturnValue)
@@ -306,7 +306,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if !ok {
 			return fmt.Errorf("can't get global '%s', it's not defined.", node.Value)
 		}
-        c.loadSymbol(symbol)
+		c.loadSymbol(symbol)
 
 	}
 
@@ -314,14 +314,14 @@ func (c *Compiler) Compile(node ast.Node) error {
 }
 
 func (c Compiler) loadSymbol(s Symbol) {
-    switch s.Scope {
-    case GlobalScope:
-        c.emit(code.OpGetGlobal, s.Index)
-    case LocalScope:
-        c.emit(code.OpGetLocal, s.Index)
-    case BuiltinScope:
-        c.emit(code.OpGetBuiltin, s.Index)
-    }
+	switch s.Scope {
+	case GlobalScope:
+		c.emit(code.OpGetGlobal, s.Index)
+	case LocalScope:
+		c.emit(code.OpGetLocal, s.Index)
+	case BuiltinScope:
+		c.emit(code.OpGetBuiltin, s.Index)
+	}
 }
 
 func (c *Compiler) addConstant(obj object.Object) int {

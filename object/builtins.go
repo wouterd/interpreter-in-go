@@ -93,8 +93,8 @@ var Builtins = []struct {
 			if length > 0 {
 				newElements := make([]Object, length-1, length-1)
 				copy(newElements, arr.Elements[1:length])
-                a := &Array{Elements: newElements}
-                return a
+				a := &Array{Elements: newElements}
+				return a
 			}
 
 			return nil
@@ -126,17 +126,17 @@ var Builtins = []struct {
 }
 
 func generateBuiltinLookup() map[string]int {
-    index := make(map[string]int, len(Builtins))
-    for i, b := range Builtins {
-        index[b.Name] = i
-    }
-    return index
+	index := make(map[string]int, len(Builtins))
+	for i, b := range Builtins {
+		index[b.Name] = i
+	}
+	return index
 }
 
 var BuiltinIndex = generateBuiltinLookup()
 
 func GetBuiltinByName(name string) *Builtin {
-    return Builtins[BuiltinIndex[name]].Builtin
+	return Builtins[BuiltinIndex[name]].Builtin
 }
 
 func newError(format string, a ...interface{}) *Error {

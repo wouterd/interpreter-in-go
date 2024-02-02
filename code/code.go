@@ -19,7 +19,7 @@ const (
 	OpGetGlobal
 	OpSetLocal
 	OpGetLocal
-    OpGetBuiltin
+	OpGetBuiltin
 
 	OpPop
 	OpAdd

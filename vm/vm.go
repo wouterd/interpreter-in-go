@@ -221,10 +221,10 @@ func (vm *VM) Run() error {
 			numArgs := int(code.ReadUint8(ins[lip+1:]))
 			vm.currentFrame().ip += 1
 
-            err := vm.executeCall(numArgs)
-            if err != nil {
-                return err
-            }
+			err := vm.executeCall(numArgs)
+			if err != nil {
+				return err
+			}
 
 		case code.OpSetLocal:
 			frame := vm.currentFrame()
@@ -244,13 +244,13 @@ func (vm *VM) Run() error {
 				return err
 			}
 
-        case code.OpGetBuiltin:
+		case code.OpGetBuiltin:
 			builtinIndex := code.ReadUint8(ins[lip+1:])
-            vm.currentFrame().ip++
+			vm.currentFrame().ip++
 
-            fn := object.Builtins[builtinIndex]
+			fn := object.Builtins[builtinIndex]
 
-            err := vm.push(fn.Builtin)
+			err := vm.push(fn.Builtin)
 			if err != nil {
 				return err
 			}
@@ -283,44 +283,44 @@ func (vm *VM) Run() error {
 }
 
 func (vm *VM) executeCall(numArgs int) error {
-    fn :=vm.stack[vm.sp-1-numArgs] 
+	fn := vm.stack[vm.sp-1-numArgs]
 
-    switch fn := fn.(type) {
-    case *object.CompiledFunction:
-        return vm.callFunction(fn, numArgs)
-    case *object.Builtin:
-        return vm.callBuiltin(fn, numArgs)
-    default:
-        return fmt.Errorf("calling non-function and non-built-in: %T", fn)
-    }
+	switch fn := fn.(type) {
+	case *object.CompiledFunction:
+		return vm.callFunction(fn, numArgs)
+	case *object.Builtin:
+		return vm.callBuiltin(fn, numArgs)
+	default:
+		return fmt.Errorf("calling non-function and non-built-in: %T", fn)
+	}
 }
 
 func (vm *VM) callFunction(fn *object.CompiledFunction, numArgs int) error {
-    if numArgs != fn.NumParameters {
-        return fmt.Errorf("wrong number of arguments: want=%d, got=%d",
-        fn.NumParameters, numArgs)
-    }
+	if numArgs != fn.NumParameters {
+		return fmt.Errorf("wrong number of arguments: want=%d, got=%d",
+			fn.NumParameters, numArgs)
+	}
 
-    frame := NewFrame(fn, vm.sp-numArgs)
-    vm.pushFrame(frame)
-    vm.sp = frame.basePointer + fn.NumLocals
-    
-    return nil
+	frame := NewFrame(fn, vm.sp-numArgs)
+	vm.pushFrame(frame)
+	vm.sp = frame.basePointer + fn.NumLocals
+
+	return nil
 }
 
 func (vm *VM) callBuiltin(fn *object.Builtin, numArgs int) error {
-    args := vm.stack[vm.sp - numArgs : vm.sp]
+	args := vm.stack[vm.sp-numArgs : vm.sp]
 
-    result := fn.Fn(args...)
-    vm.sp = vm.sp - numArgs - 1
+	result := fn.Fn(args...)
+	vm.sp = vm.sp - numArgs - 1
 
-    if result != nil {
-        vm.push(result)
-    } else {
-        vm.push(Null)
-    }
+	if result != nil {
+		vm.push(result)
+	} else {
+		vm.push(Null)
+	}
 
-    return nil
+	return nil
 }
 
 func (vm *VM) executeIndexExpression(left, index object.Object) error {
@@ -523,19 +523,19 @@ func (vm *VM) pop() object.Object {
 }
 
 func (vm *VM) PrintStack() string {
-    var out bytes.Buffer
+	var out bytes.Buffer
 
-    out.WriteString("VM Stack: ")
-    out.WriteString(fmt.Sprint("sp=", vm.sp, "\n"))
-    for i, o := range vm.stack[0 : vm.sp] {
-        var obj string
-        if o != nil {
-            obj = o.Inspect()
-        } else {
-            obj = "NULL"
-        }
-        out.WriteString(fmt.Sprintf("%04d: %s\n", i, obj))
-    }
+	out.WriteString("VM Stack: ")
+	out.WriteString(fmt.Sprint("sp=", vm.sp, "\n"))
+	for i, o := range vm.stack[0:vm.sp] {
+		var obj string
+		if o != nil {
+			obj = o.Inspect()
+		} else {
+			obj = "NULL"
+		}
+		out.WriteString(fmt.Sprintf("%04d: %s\n", i, obj))
+	}
 
-    return out.String()
+	return out.String()
 }
