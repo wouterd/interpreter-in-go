@@ -18,17 +18,17 @@ var False = &object.Boolean{Value: false}
 var Null = &object.Null{}
 
 type Frame struct {
-	fn          *object.CompiledFunction
+	cl          *object.Closure
 	ip          int
 	basePointer int
 }
 
-func NewFrame(fn *object.CompiledFunction, basePointer int) *Frame {
-	return &Frame{fn: fn, ip: -1, basePointer: basePointer}
+func NewFrame(cl *object.Closure, basePointer int) *Frame {
+	return &Frame{cl: cl, ip: -1, basePointer: basePointer}
 }
 
 func (f *Frame) Instructions() code.Instructions {
-	return f.fn.Instructions
+	return f.cl.Fn.Instructions
 }
 
 type VM struct {
@@ -44,7 +44,8 @@ type VM struct {
 
 func New(instructions code.Instructions, constants []object.Object) *VM {
 	mainFn := &object.CompiledFunction{Instructions: instructions}
-	mainFrame := NewFrame(mainFn, 0)
+	mainClosure := &object.Closure{Fn: mainFn}
+	mainFrame := NewFrame(mainClosure, 0)
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = mainFrame
 
@@ -78,7 +79,8 @@ func (vm *VM) Recode(instructions code.Instructions, constants []object.Object) 
 	vm.sp = 0
 	vm.constants = constants
 	fn := &object.CompiledFunction{Instructions: instructions}
-	f := NewFrame(fn, 0)
+	cl := &object.Closure{Fn: fn}
+	f := NewFrame(cl, 0)
 	vm.frames[vm.frameIdx] = f
 }
 
@@ -226,6 +228,16 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpClosure:
+			constIndex := code.ReadUint16(ins[lip+1:])
+			numFree := code.ReadUint8(ins[lip+3:])
+			vm.currentFrame().ip += 3
+
+			err := vm.pushClosure(int(constIndex), int(numFree))
+			if err != nil {
+				return err
+			}
+
 		case code.OpSetLocal:
 			frame := vm.currentFrame()
 			localIndex := code.ReadUint8(ins[lip+1:])
@@ -282,12 +294,26 @@ func (vm *VM) Run() error {
 	return nil
 }
 
+func (vm *VM) pushClosure(constIndex int, amFree int) error {
+	constant := vm.constants[constIndex]
+	fn, ok := constant.(*object.CompiledFunction)
+	if !ok {
+		return fmt.Errorf("not a function: %+v", constant)
+	}
+
+	cl := &object.Closure{
+		Fn: fn,
+	}
+
+	return vm.push(cl)
+}
+
 func (vm *VM) executeCall(numArgs int) error {
 	fn := vm.stack[vm.sp-1-numArgs]
 
 	switch fn := fn.(type) {
-	case *object.CompiledFunction:
-		return vm.callFunction(fn, numArgs)
+	case *object.Closure:
+		return vm.callClosure(fn, numArgs)
 	case *object.Builtin:
 		return vm.callBuiltin(fn, numArgs)
 	default:
@@ -295,15 +321,15 @@ func (vm *VM) executeCall(numArgs int) error {
 	}
 }
 
-func (vm *VM) callFunction(fn *object.CompiledFunction, numArgs int) error {
-	if numArgs != fn.NumParameters {
+func (vm *VM) callClosure(cl *object.Closure, numArgs int) error {
+	if numArgs != cl.Fn.NumParameters {
 		return fmt.Errorf("wrong number of arguments: want=%d, got=%d",
-			fn.NumParameters, numArgs)
+			cl.Fn.NumParameters, numArgs)
 	}
 
-	frame := NewFrame(fn, vm.sp-numArgs)
+	frame := NewFrame(cl, vm.sp-numArgs)
 	vm.pushFrame(frame)
-	vm.sp = frame.basePointer + fn.NumLocals
+	vm.sp = frame.basePointer + cl.Fn.NumLocals
 
 	return nil
 }

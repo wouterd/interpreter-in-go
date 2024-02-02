@@ -292,7 +292,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			NumParameters: len(node.Parameters),
 		}
 
-		c.emit(code.OpConstant, c.addConstant(compiledFunc))
+		c.emit(code.OpClosure, c.addConstant(compiledFunc), 0)
 
 	case *ast.Boolean:
 		if node.Value {

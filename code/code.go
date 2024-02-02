@@ -37,6 +37,7 @@ const (
 	OpCall
 	OpReturnValue
 	OpReturn
+	OpClosure
 
 	OpTrue
 	OpFalse
@@ -69,6 +70,7 @@ var definitions = map[Opcode]*Definition{
 	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
 	OpJump:          {"OpJump", []int{2}},
 	OpCall:          {"OpCall", []int{1}},
+	OpClosure:       {"OpClosure", []int{2, 1}},
 	OpReturnValue:   {"OpReturnValue", []int{}},
 	OpReturn:        {"OpReturn", []int{}},
 	OpNull:          {"OpNull", []int{}},
@@ -112,6 +114,8 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
+	case 2:
+		return fmt.Sprintf("%s %d %d", def.Name, operands[0], operands[1])
 	}
 
 	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
