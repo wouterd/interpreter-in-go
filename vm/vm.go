@@ -238,6 +238,12 @@ func (vm *VM) Run() error {
 				return err
 			}
 
+		case code.OpCurrentClosure:
+			err := vm.push(vm.currentFrame().cl)
+			if err != nil {
+				return err
+			}
+
 		case code.OpSetLocal:
 			frame := vm.currentFrame()
 			localIndex := code.ReadUint8(ins[lip+1:])
@@ -263,6 +269,16 @@ func (vm *VM) Run() error {
 			fn := object.Builtins[builtinIndex]
 
 			err := vm.push(fn.Builtin)
+			if err != nil {
+				return err
+			}
+
+		case code.OpGetFree:
+			freeIdx := code.ReadUint8(ins[lip+1:])
+			vm.currentFrame().ip++
+
+			val := vm.currentFrame().cl.Free[freeIdx]
+			err := vm.push(val)
 			if err != nil {
 				return err
 			}
@@ -301,8 +317,13 @@ func (vm *VM) pushClosure(constIndex int, amFree int) error {
 		return fmt.Errorf("not a function: %+v", constant)
 	}
 
+	free := make([]object.Object, amFree)
+	copy(free, vm.stack[vm.sp-amFree:vm.sp])
+	vm.sp -= amFree
+
 	cl := &object.Closure{
-		Fn: fn,
+		Fn:   fn,
+		Free: free,
 	}
 
 	return vm.push(cl)

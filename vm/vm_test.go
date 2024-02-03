@@ -81,12 +81,13 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 			t.Fatalf("[%d]: vm error: %s", i, err)
 		}
 		stackElem := vm.LastPoppedStackElem()
-		testExpectedObject(t, tt.expected, stackElem)
+		testExpectedObject(t, i, tt.expected, stackElem)
 	}
 }
 
 func testExpectedObject(
 	t *testing.T,
+	i int,
 	expected interface{},
 	actual object.Object,
 ) {
@@ -95,68 +96,68 @@ func testExpectedObject(
 	case int:
 		err := testIntegerObject(int64(expected), actual)
 		if err != nil {
-			t.Errorf("testIntegerObject failed: %s", err)
+			t.Errorf("[%d] testIntegerObject failed: %s", i, err)
 		}
 	case bool:
 		err := testBooleanObject(bool(expected), actual)
 		if err != nil {
-			t.Errorf("testBooleanObject failed: %s", err)
+			t.Errorf("[%d] testBooleanObject failed: %s", i, err)
 		}
 	case *object.Null:
 		if actual != Null {
-			t.Errorf("object is not Null: %T (%+v)", actual, actual)
+			t.Errorf("[%d] object is not Null: %T (%+v)", i, actual, actual)
 		}
 	case string:
 		err := testStringObject(expected, actual)
 		if err != nil {
-			t.Errorf("testStringObject failed: %s", err)
+			t.Errorf("[%d] testStringObject failed: %s", i, err)
 		}
 	case []int:
 		array, ok := actual.(*object.Array)
 		if !ok {
-			t.Errorf("object not Array: %T (%+v)", actual, actual)
+			t.Errorf("[%d] object not Array: %T (%+v)", i, actual, actual)
 			return
 		}
 		if len(array.Elements) != len(expected) {
-			t.Errorf("wrong num of elements. want=%d, got=%d",
-				len(expected), len(array.Elements))
+			t.Errorf("[%d] wrong num of elements. want=%d, got=%d",
+				i, len(expected), len(array.Elements))
 			return
 		}
 		for i, expectedElem := range expected {
 			err := testIntegerObject(int64(expectedElem), array.Elements[i])
 			if err != nil {
-				t.Errorf("testIntegerObject failed: %s", err)
+				t.Errorf("[%d] testIntegerObject failed: %s", i, err)
 			}
 		}
 	case map[object.Hashable]int64:
 		hash, ok := actual.(*object.Hash)
 		if !ok {
-			t.Errorf("object is not Hash. got=%T (%+v)", actual, actual)
+			t.Errorf("[%d] object is not Hash. got=%T (%+v)", i, actual, actual)
 			return
 		}
 		if hash.Len() != len(expected) {
-			t.Errorf("hash has wrong number of Pairs. want=%d, got=%d",
-				len(expected), hash.Len())
+			t.Errorf("[%d] hash has wrong number of Pairs. want=%d, got=%d",
+				i, len(expected), hash.Len())
 			return
 		}
 		for expectedKey, expectedValue := range expected {
 			pair, ok := hash.Get(expectedKey)
 			if !ok {
-				t.Errorf("no pair for given key in Pairs")
+				t.Errorf("[%d] no pair for given key in Pairs", i)
 			}
 			err := testIntegerObject(expectedValue, pair)
 			if err != nil {
-				t.Errorf("testIntegerObject failed: %s", err)
+				t.Errorf("[%d] testIntegerObject failed: %s", i, err)
 			}
 		}
 	case *object.Error:
 		errObj, ok := actual.(*object.Error)
 		if !ok {
-			t.Errorf("object is not Error: %T (%+v)", actual, actual)
+			t.Errorf("[%d] object is not Error: %T (%+v)", i, actual, actual)
 			return
 		}
 		if errObj.Message != expected.Message {
-			t.Errorf("wrong error message. expected=%q, got=%q",
+			t.Errorf("[%d] wrong error message. expected=%q, got=%q", i,
 				expected.Message, errObj.Message)
 		}
 	}
@@ -406,40 +407,40 @@ func TestCallingFunctionsWithBindings(t *testing.T) {
 		},
 		{
 			input: `
-            let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
-            oneAndTwo();
-            `,
+		            let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+		            oneAndTwo();
+		            `,
 			expected: 3,
 		},
 		{
 			input: `
-            let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
-            let threeAndFour = fn() { let three = 3; let four = 4; three + four; };
-            oneAndTwo() + threeAndFour();
-            `,
+		            let oneAndTwo = fn() { let one = 1; let two = 2; one + two; };
+		            let threeAndFour = fn() { let three = 3; let four = 4; three + four; };
+		            oneAndTwo() + threeAndFour();
+		            `,
 			expected: 10,
 		},
 		{
 			input: `
-            let firstFoobar = fn() { let foobar = 50; foobar; };
-            let secondFoobar = fn() { let foobar = 100; foobar; };
-            firstFoobar() + secondFoobar();
-            `,
+		            let firstFoobar = fn() { let foobar = 50; foobar; };
+		            let secondFoobar = fn() { let foobar = 100; foobar; };
+		            firstFoobar() + secondFoobar();
+		            `,
 			expected: 150,
 		},
 		{
 			input: `
-            let globalSeed = 50;
-            let minusOne = fn() {
-                let num = 1;
-                globalSeed - num;
-            }
-            let minusTwo = fn() {
-                let num = 2;
-                globalSeed - num;
-            }
-            minusOne() + minusTwo();
-            `,
+		            let globalSeed = 50;
+		            let minusOne = fn() {
+		                let num = 1;
+		                globalSeed - num;
+		            }
+		            let minusTwo = fn() {
+		                let num = 2;
+		                globalSeed - num;
+		            }
+		            minusOne() + minusTwo();
+		            `,
 			expected: 97,
 		},
 	}
@@ -589,5 +590,135 @@ func TestBuiltinFunctions(t *testing.T) {
 		},
 	}
 
+	runVmTests(t, tests)
+}
+
+func TestClosures(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+            let newClosure = fn(a) {
+                fn() { a; };
+            };
+            let closure = newClosure(99);
+            closure();
+            `,
+			expected: 99,
+		},
+		{
+			input: `
+            let newAdder = fn(a, b) {
+                fn(c) { a + b + c };
+            };
+            let adder = newAdder(1, 2);
+            adder(8);
+            `,
+			expected: 11,
+		},
+		{
+			input: `
+            let newAdder = fn(a, b) {
+                let c = a + b;
+                fn(d) { c + d };
+            };
+            let adder = newAdder(1, 2);
+            adder(8);
+            `,
+			expected: 11,
+		},
+		{
+			input: `
+            let newAdderOuter = fn(a, b) {
+                let c = a + b;
+                fn(d) {
+                    let e = d + c;
+                    fn(f) { e + f; };
+                };
+            };
+            let newAdderInner = newAdderOuter(1, 2)
+            let adder = newAdderInner(3);
+            adder(8);
+            `,
+			expected: 14,
+		},
+		{
+			input: `
+            let a = 1;
+            let newAdderOuter = fn(b) {
+                fn(c) {
+                    fn(d) { a + b + c + d };
+                };
+            };
+            let newAdderInner = newAdderOuter(2)
+            let adder = newAdderInner(3);
+            adder(8);
+            `,
+			expected: 14,
+		},
+		{
+			input: `
+            let newClosure = fn(a, b) {
+                let one = fn() { a; };
+                let two = fn() { b; };
+                fn() { one() + two(); };
+            };
+            let closure = newClosure(9, 90);
+            closure();
+            `,
+			expected: 99,
+		},
+	}
+
+	runVmTests(t, tests)
+}
+
+func TestRecursiveFunctions(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+            let countDown = fn(x) {
+                if (x == 0) {
+                    return 0;
+                } else {
+                    countDown(x - 1);
+                }
+            };
+            countDown(1);
+            `,
+			expected: 0,
+		},
+		{
+			input: `
+            let countDown = fn(x) {
+                if (x == 0) {
+                    return 0;
+                } else {
+                    countDown(x - 1);
+                }
+            };
+            let wrapper = fn() {
+                countDown(1);
+            };
+            wrapper();
+            `,
+			expected: 0,
+		},
+		{
+			input: `
+            let wrapper = fn() {
+                let countDown = fn(x) {
+                    if (x == 0) {
+                        return 0;
+                    } else {
+                        countDown(x - 1);
+                    }
+                };
+                countDown(1);
+            };
+            wrapper();
+            `,
+			expected: 0,
+		},
+	}
 	runVmTests(t, tests)
 }

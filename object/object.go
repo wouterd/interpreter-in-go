@@ -193,7 +193,7 @@ type CompiledFunction struct {
 
 func (cf *CompiledFunction) Type() ObjectType { return COMPILED_FUNCTION_OBJ }
 func (cf *CompiledFunction) Inspect() string {
-	return fmt.Sprintf("CompiledFunction[%p]", cf)
+	return fmt.Sprintf("CompiledFunction[%p]: %s", cf, cf.Instructions)
 }
 
 type Closure struct {

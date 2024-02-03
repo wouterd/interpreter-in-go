@@ -83,14 +83,16 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.emit(code.OpPop)
 
 	case *ast.LetStatement:
+		symbol, ok := c.symbols.Resolve(node.Name.Value)
+		if !ok || symbol.Scope != LocalScope {
+			symbol = c.symbols.Define(node.Name.Value)
+		}
+
 		err := c.Compile(node.Value)
 		if err != nil {
 			return err
 		}
-		symbol, ok := c.symbols.Resolve(node.Name.Value)
-		if !ok {
-			symbol = c.symbols.Define(node.Name.Value)
-		}
+
 		if symbol.Scope == LocalScope {
 			c.emit(code.OpSetLocal, symbol.Index)
 		} else {
@@ -263,6 +265,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.FunctionLiteral:
 		c.enterScope()
 
+		if node.Name != "" {
+			c.symbols.DefineFunctionName(node.Name)
+		}
+
 		for _, p := range node.Parameters {
 			c.symbols.Define(p.Value)
 		}
@@ -283,16 +289,21 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpReturn)
 		}
 
+		freeSymbols := c.symbols.FreeSymbols
 		numLocals := c.symbols.numDefinitions
-
 		instructions := c.leaveScope()
+
+		for _, s := range freeSymbols {
+			c.loadSymbol(s)
+		}
+
 		compiledFunc := &object.CompiledFunction{
 			Instructions:  instructions,
 			NumLocals:     numLocals,
 			NumParameters: len(node.Parameters),
 		}
 
-		c.emit(code.OpClosure, c.addConstant(compiledFunc), 0)
+		c.emit(code.OpClosure, c.addConstant(compiledFunc), len(freeSymbols))
 
 	case *ast.Boolean:
 		if node.Value {
@@ -321,6 +332,10 @@ func (c Compiler) loadSymbol(s Symbol) {
 		c.emit(code.OpGetLocal, s.Index)
 	case BuiltinScope:
 		c.emit(code.OpGetBuiltin, s.Index)
+	case FreeScope:
+		c.emit(code.OpGetFree, s.Index)
+	case FunctionScope:
+		c.emit(code.OpCurrentClosure)
 	}
 }
 
