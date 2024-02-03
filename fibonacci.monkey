@@ -4,3 +4,4 @@ let fibonacci = fn(x) {
     }
     fibonacci(x-1) + fibonacci(x-2);
 }
+fibonacci(35)

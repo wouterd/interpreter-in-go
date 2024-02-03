@@ -1,6 +1,6 @@
 package ast
 
-import "fmt"
+import "reflect"
 
 type ModifierFunc func(Node) Node
 
@@ -9,7 +9,7 @@ func Modify(node Node, modifier ModifierFunc) Node {
 		return Modify(node, modifier)
 	}
 
-	if node == nil {
+	if rv := reflect.ValueOf(node); !rv.IsValid() || rv.IsNil() {
 		return node
 	}
 
@@ -20,7 +20,6 @@ func Modify(node Node, modifier ModifierFunc) Node {
 		}
 
 	case *BlockStatement:
-		fmt.Println(node.String())
 		for i, stmt := range node.Statements {
 			node.Statements[i], _ = mod(stmt).(Statement)
 		}
