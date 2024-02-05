@@ -123,6 +123,26 @@ var Builtins = []struct {
 		},
 		},
 	},
+    {
+        "pop",
+        &Builtin{Fn: func(args ...Object) Object {
+            if len(args) != 1 {
+                return newError("pop() requires one argument: just an array, got %d", len(args))
+            }
+            
+			if args[0].Type() != ARRAY_OBJ {
+				return newError("argument to `pop` must be ARRAY, got %s", args[0].Type())
+			}
+
+			arr := args[0].(*Array)
+			length := len(arr.Elements)
+
+			newElements := make([]Object, length-1, length-1)
+            copy(newElements, arr.Elements[:len(newElements)])
+
+			return &Array{Elements: newElements}
+        }},
+    },
 }
 
 func generateBuiltinLookup() map[string]int {

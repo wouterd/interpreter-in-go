@@ -17,7 +17,6 @@ const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	//env := object.NewEnvironment()
 	macroEnv := object.NewEnvironment()
 	comp := compiler.New()
 	machine := vm.New(comp.Bytecode().Instructions, comp.Bytecode().Constants)
