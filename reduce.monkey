@@ -13,4 +13,4 @@ let sum = fn(arr) {
     reduce(arr, 0, fn(initial, el) { initial + el });
 };
 
-sum([1,2,3,4,5])
+puts(sum([1,2,3,4,5]))
