@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	StackSize   = 2048
+	StackSize   = 2048 * 1024
 	GlobalsSize = 65536
-	MaxFrames   = 1024
+	MaxFrames   = 1024 * 1024 / 16
 )
 
 var True = &object.Boolean{Value: true}

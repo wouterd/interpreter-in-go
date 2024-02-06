@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"monkey/compiler"
+	"monkey/evaluator"
 	"monkey/lexer"
+	"monkey/object"
 	"monkey/parser"
 	"monkey/repl"
 	"monkey/vm"
@@ -16,7 +18,7 @@ type Mode int
 
 const (
 	REPL = iota
-	COMP
+	COMPILE
 	RUN
 	SCRIPT
 )
@@ -29,7 +31,7 @@ func main() {
 	if len(flag.Args()) > 0 {
 		switch flag.Arg(0) {
 		case "c", "compile":
-			mode = COMP
+			mode = COMPILE
 		case "r", "run":
 			mode = RUN
 		case "s", "script":
@@ -95,6 +97,10 @@ func runScript(filename string) {
 	p := parser.New(l)
 	program := p.ParseProgram()
 
+	macroEnv := object.NewEnvironment()
+	evaluator.DefineMacros(program, macroEnv)
+	expanded := evaluator.ExpandMacros(program, macroEnv)
+
 	if len(p.Errors()) > 0 {
 		fmt.Println("Error(s) parsing the script:")
 		for _, e := range p.Errors() {
@@ -104,7 +110,7 @@ func runScript(filename string) {
 	}
 
 	c := compiler.New()
-	err = c.Compile(program)
+	err = c.Compile(expanded)
 
 	if err != nil {
 		fmt.Println("Error while compiling script: ", err.Error())

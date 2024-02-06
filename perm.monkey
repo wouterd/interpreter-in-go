@@ -24,7 +24,7 @@ let for = fn(curr, stop, f) {
     return acc
 }
 
-let nums = [1,2,3]
+let nums = for(1, 8, fn(acc, x) { push(acc, x) })
 
 let backtrack = fn(solution) {
     if (len(nums) == len(solution)) {
