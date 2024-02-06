@@ -128,6 +128,15 @@ func runBytecode(filename string) {
 }
 
 func compileScript(filename string) {
+	if _, err := os.Stat(filename); err != nil {
+		// filename not found, try with .mky extension
+		if _, err := os.Stat(filename + ".monkey"); err != nil {
+			fmt.Println(fmt.Sprintf("Can't find '%s(.monkey)'", filename))
+			os.Exit(-1)
+		}
+		filename = filename + ".monkey"
+	}
+
 	base := path.Base(filename)
 	ext := path.Ext(filename)
 	outFile := path.Join(path.Dir(filename), base[:len(base)-len(ext)]) + ".mky"
@@ -191,6 +200,15 @@ func loadScript(filename string) *compiler.Bytecode {
 }
 
 func runScript(filename string) {
+	if _, err := os.Stat(filename); err != nil {
+		// filename not found, try with .mky extension
+		if _, err := os.Stat(filename + ".monkey"); err != nil {
+			fmt.Println(fmt.Sprintf("Can't find '%s(.monkey)'", filename))
+			os.Exit(-1)
+		}
+		filename = filename + ".monkey"
+	}
+
 	bytecode := loadScript(filename)
 
 	vm := vm.New(bytecode.Instructions, bytecode.Constants)
