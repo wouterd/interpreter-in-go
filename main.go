@@ -9,9 +9,11 @@ import (
 	"monkey/object"
 	"monkey/parser"
 	"monkey/repl"
+	"monkey/serializer"
 	"monkey/vm"
 	"os"
 	"os/user"
+	"path"
 )
 
 type Mode int
@@ -55,6 +57,26 @@ func main() {
 		repl.Start(os.Stdin, os.Stdout)
 		os.Exit(0)
 
+	case COMPILE:
+		filename := flag.Arg(1)
+		if filename == "" {
+			fmt.Println("the compile command requires you to specify a file to compile.")
+			fmt.Println("Like this: monkey script chimp.monkey")
+			os.Exit(-1)
+		}
+
+		compileScript(filename)
+
+	case RUN:
+		filename := flag.Arg(1)
+		if filename == "" {
+			fmt.Println("the compile command requires you to specify a file to compile.")
+			fmt.Println("Like this: monkey script chimp.monkey")
+			os.Exit(-1)
+		}
+
+		runBytecode(filename)
+
 	case SCRIPT:
 		filename := flag.Arg(1)
 		if filename == "" {
@@ -73,7 +95,55 @@ func main() {
 	os.Exit(0)
 }
 
-func runScript(filename string) {
+func runBytecode(filename string) {
+	if _, err := os.Stat(filename); err != nil {
+		// filename not found, try with .mky extension
+		if _, err := os.Stat(filename + ".mky"); err != nil {
+			fmt.Println(fmt.Sprintf("Can't find '%s(.mky)'", filename))
+			os.Exit(-1)
+		}
+		filename = filename + ".mky"
+	}
+
+	contents, err := os.ReadFile(filename)
+	if err != nil {
+		fmt.Println("Can't read from", filename, ":", err.Error())
+		os.Exit(-1)
+	}
+
+	l := serializer.NewLoader(contents)
+	bytecode, err := l.Load()
+	if err != nil {
+		fmt.Println("Loaded data from ", filename)
+		fmt.Println("Error loading program:", err)
+		os.Exit(-1)
+	}
+
+	vm := vm.New(bytecode.Instructions, bytecode.Constants)
+	err = vm.Run()
+	if err != nil {
+		fmt.Println("Runtime error:", err.Error())
+		os.Exit(-1)
+	}
+}
+
+func compileScript(filename string) {
+	base := path.Base(filename)
+	ext := path.Ext(filename)
+	outFile := path.Join(path.Dir(filename), base[:len(base)-len(ext)]) + ".mky"
+	fmt.Println("compiling", filename, "into", outFile, "...")
+
+	bytecode := loadScript(filename)
+	s := serializer.New()
+	s.Write(bytecode)
+
+	if err := os.WriteFile(outFile, s.Output, 0666); err != nil {
+		fmt.Println("Error writing results: ", err.Error())
+		os.Exit(-1)
+	}
+}
+
+func loadScript(filename string) *compiler.Bytecode {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("Can't open file %s: %s", filename, err.Error()))
@@ -114,10 +184,17 @@ func runScript(filename string) {
 
 	if err != nil {
 		fmt.Println("Error while compiling script: ", err.Error())
+		os.Exit(-1)
 	}
 
-	vm := vm.New(c.Bytecode().Instructions, c.Bytecode().Constants)
-	err = vm.Run()
+	return c.Bytecode()
+}
+
+func runScript(filename string) {
+	bytecode := loadScript(filename)
+
+	vm := vm.New(bytecode.Instructions, bytecode.Constants)
+	err := vm.Run()
 
 	if err != nil {
 		fmt.Println("Error in execution: ", err.Error())
